@@ -16,13 +16,24 @@ class Museo(models.Model):
         verbose_name="Año de fundación"
     )
 
-    class Meta:
-        verbose_name = "Museo"
-        verbose_name_plural = "Museos"
+    def calcular_costo_total_produccion(self):
+        resultado = Exhibicion.objects.filter(guia_museo__museo=self).aggregate(
+            total=Sum('costo_produccion')
+        )
+        return resultado['total'] or 0
+
+    def guia_mas_experiencia(self):
+        guias = self.guias.all()
+        if not guias.exists():
+            return "No registrado"
+        guias_mas_experiencia = guias.first()
+        for guia in guias:
+            if guia.anios_experiencia_guia >= guias_mas_experiencia.anios_experiencia_guia:
+                guias_mas_experiencia = guia
+        return guias_mas_experiencia.nombre_completo
 
     def __str__(self):
         return self.nombre
-
 
 class GuiaMuseo(models.Model):
     nombre_completo = models.CharField(
@@ -42,13 +53,6 @@ class GuiaMuseo(models.Model):
         related_name="guias",
         verbose_name="Museo"
     )
-
-    def calcular_costo_total_produccion(self):
-        costo_total = 0
-        for exhibicion in self.exhibiciones.all():
-            costo_total += exhibicion.costo_produccion
-        return costo_total
-
     class Meta:
         verbose_name = "Guía de Museo"
         verbose_name_plural = "Guías de Museo"
@@ -56,8 +60,6 @@ class GuiaMuseo(models.Model):
     def __str__(self):
         return self.nombre_completo
     
-
-
 class Exhibicion(models.Model):
     titulo_exhibicion = models.CharField(
         max_length=150,

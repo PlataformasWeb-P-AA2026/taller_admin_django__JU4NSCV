@@ -10,16 +10,16 @@ Al momento de presentar la información de museos, se debe presentar, además, e
 '''
 
 
-class ExhibicionInline(admin.ModelAdmin):
+class ExhibicionAdmin(admin.ModelAdmin):
     list_display = ('titulo_exhibicion', 'duracion_meses', 'costo_produccion', 'tematica', 'guia_museo')
 
-class MuseoInline(admin.ModelAdmin):
-    list_display = ('nombre', 'ciudad', 'anio_fundacion', 'calcular_costo_total_produccion', 'guia_museo')
-    
-class GuiaMuseoInline(admin.ModelAdmin):
+class MuseoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'ciudad', 'anio_fundacion', 'calcular_costo_total_produccion', 'guia_mas_experiencia')
+
+class GuiaMuseoAdmin(admin.ModelAdmin):
     list_display = ('nombre_completo', 'anios_experiencia_guia', 'idiomas_hablados', 'museo')
 
 
-admin.site.register(Museo, MuseoInline)
-admin.site.register(GuiaMuseo, GuiaMuseoInline)
-admin.site.register(Exhibicion, ExhibicionInline)
+admin.site.register(Museo, MuseoAdmin)
+admin.site.register(GuiaMuseo, GuiaMuseoAdmin)
+admin.site.register(Exhibicion, ExhibicionAdmin)
