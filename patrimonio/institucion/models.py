@@ -15,22 +15,35 @@ class Museo(models.Model):
     anio_fundacion = models.IntegerField(
         verbose_name="Año de fundación"
     )
-
+    
     def calcular_costo_total_produccion(self):
-        resultado = Exhibicion.objects.filter(guia_museo__museo=self).aggregate(
-            total=Sum('costo_produccion')
-        )
-        return resultado['total'] or 0
+        costo_total = 0
+        for guia in self.guias.all():
+            for exhibicion in guia.exhibiciones.all():
+                if exhibicion.costo_produccion:
+                    costo_total += exhibicion.costo_produccion
+        return costo_total
+    calcular_costo_total_produccion.short_description = "Costo total de producción"
 
     def guia_mas_experiencia(self):
         guias = self.guias.all()
         if not guias.exists():
             return "No registrado"
-        guias_mas_experiencia = guias.first()
+        max_exp = -1
         for guia in guias:
-            if guia.anios_experiencia_guia >= guias_mas_experiencia.anios_experiencia_guia:
-                guias_mas_experiencia = guia
-        return guias_mas_experiencia.nombre_completo
+            if guia.anios_experiencia_guia is not None and guia.anios_experiencia_guia > max_exp:
+                max_exp = guia.anios_experiencia_guia
+                
+        if max_exp == -1:
+            return "No registrado"
+        nombres_guias = []
+        for guia in guias:
+            if guia.anios_experiencia_guia == max_exp:
+                nombres_guias.append(guia.nombre_completo)
+                
+        return ", ".join(nombres_guias)
+        
+    guia_mas_experiencia.short_description = "Guía(s) con más experiencia"
 
     def __str__(self):
         return self.nombre
@@ -53,9 +66,6 @@ class GuiaMuseo(models.Model):
         related_name="guias",
         verbose_name="Museo"
     )
-    class Meta:
-        verbose_name = "Guía de Museo"
-        verbose_name_plural = "Guías de Museo"
 
     def __str__(self):
         return self.nombre_completo
@@ -83,10 +93,5 @@ class Exhibicion(models.Model):
         related_name="exhibiciones",
         verbose_name="Guía de museo"
     )
-
-    class Meta:
-        verbose_name = "Exhibición"
-        verbose_name_plural = "Exhibiciones"
-
     def __str__(self):
         return self.titulo_exhibicion
